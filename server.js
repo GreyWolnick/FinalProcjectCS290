@@ -1,4 +1,6 @@
+// Based off Assignment  5 Server 
 var express = require('express');
+
 var exphbs = require('express-handlebars')
 var bodyParser = require('body-parser');
 var fs = require('fs');
@@ -39,6 +41,11 @@ app.get('/posts/:n', function (req, res, next) {
   }
 });
 
+app.get('/game', function (req, res, next) {
+  res.status(200).render('game', {})
+});
+
+// Add a new  post object  in Json file   
 app.post('/posts/add', function (req, res, next) {
   console.log("  -- req.body:", req.body)
 
@@ -75,6 +82,7 @@ app.post('/posts/add', function (req, res, next) {
   }
 });
 
+// Remove the post from the json file and write the file  
 app.post('/posts/remove', function (req, res, next) {
   console.log("  -- req.body:", req.body)
 
@@ -85,7 +93,7 @@ app.post('/posts/remove', function (req, res, next) {
     if (index > -1) {
       postData.splice(index, 1);
     }
-
+      // splice the list 
     for (let i = 0; i < postData.length; i++) {
       postData[i].index = i;
     }

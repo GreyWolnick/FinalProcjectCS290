@@ -6,10 +6,15 @@ function clickPost () {
 
 $("#icon").click(function() {
   window.location = "/";
+})
+
+$(".secret").click(function() {
+  window.location = "/game";
 }) 
 
+
 $("#contract-accept").click(function() {
-  var request = new XMLHttpRequest();
+  var request = new XMLHttpRequest(); // Using XMLHTTPRequest to the Server 
 
   var requestURL = '/posts' + '/remove';
   request.open('POST', requestURL);
@@ -24,7 +29,7 @@ $("#contract-accept").click(function() {
 
   request.setRequestHeader('Content-Type', 'application/json');
 
-  request.addEventListener('load', function (event) {
+  request.addEventListener('load', function (event) {  //event listener for what to do when a response is recieved
     if (event.target.status !== 200) {
       var message = event.target.response;
       alert("Error submitting agreement: " + message);
@@ -69,8 +74,6 @@ function toggleCreateModal () {
 $("#create-post-button").on({click: toggleCreateModal});
 $("#modal-close").on({click: toggleCreateModal});
 
-let directions = ['left', 'right', 'top', 'bottom'];
-
 $(function() {
   $("#return-button").on({
     mouseover: function() {
@@ -81,6 +84,26 @@ $(function() {
       $(this).animate({
           left: x,
           top: y,
+        });
+    }
+  });
+});
+
+$(function() {
+  $(".site-title").on({
+    mouseenter: function() {
+      $(this).animate({
+          letterSpacing: 10,
+        });
+    }
+  });
+});
+
+$(function() {
+  $(".site-title").on({
+    mouseleave: function() {
+      $(this).animate({
+          letterSpacing: 0,
         });
     }
   });
@@ -110,13 +133,11 @@ $(function() {
 
       var minBody = body;
 
-      console.log(body);
-
       if (body.length > 350) {
         minBody = body.slice(0, 346) + '...';
       }
 
-      var request = new XMLHttpRequest();
+      var request = new XMLHttpRequest(); // Make another XML request to send to server
 
       var requestURL = '/posts' + '/add';
       request.open('POST', requestURL);
@@ -132,7 +153,7 @@ $(function() {
 
       request.setRequestHeader('Content-Type', 'application/json');
 
-      request.addEventListener('load', function (event) {
+      request.addEventListener('load', function (event) {  // event listener for what to do when a response is recieved
         if (event.target.status !== 200) {
           var message = event.target.response;
           alert("Error adding post: " + message);
@@ -141,6 +162,10 @@ $(function() {
 
           var postsSection = document.getElementById('posts');
           postsSection.insertAdjacentHTML('beforeend', postDiv);
+
+          var postElems = document.getElementsByClassName('post');
+
+          allPosts.push(parsePostElem(postElems[postElems.length - 1]))
 
           toggleCreateModal();
           addClickEvents();
@@ -206,7 +231,6 @@ $('#search-bar').on('input', function() {
   }
 
   for (var i = 0; i < allPosts.length; i++) {
-    console.log();
     if (allPosts[i].title.toUpperCase().includes(query.toUpperCase()) || allPosts[i].minBody.toUpperCase().includes(query.toUpperCase())) {
       reInsertPosts(allPosts[i].index, allPosts[i].title, allPosts[i].minBody);
     }
@@ -240,3 +264,122 @@ window.addEventListener('DOMContentLoaded', function () {
   }
 
 });
+
+
+// Game Stuff (BALL BOUNCING FROM https://stackoverflow.com/questions/7873502/jquery-bounce-variation-bounce-around)
+
+var $parent = $('#ball').parent(),
+    playHeight = ($parent.height() + 139),
+    playWidth = $parent.width(),
+    topBound = 138,
+    leftBound = 0,
+    play = true,
+    score = 0,
+    speed = 3;
+
+var labels = ['Faster Now!', 'That Was Easy!', 'Little Tougher?', 'You need to Practice!', 'Woah!', "Okay, I'm impressed."]
+
+$.fn.bounce = function(options) {
+    
+    var settings = $.extend({
+        speed: 10
+    }, options);
+
+    return $(this).each(function() {
+        
+        var $this = $(this),
+            top = Math.floor(Math.random() * (playHeight / 2)) + playHeight / 4,
+            left = Math.floor(Math.random() * (playWidth / 2)) + playWidth / 4,
+            vectorX = settings.speed * (Math.random() > 0.5 ? 1 : -1),
+            vectorY = settings.speed * (Math.random() > 0.5 ? 1 : -1);
+
+        $this.css({
+            'top': top,
+            'left': left
+        }).data('vector', {
+            'x': vectorX,
+            'y': vectorY
+        });
+
+        var move = function($e) {
+            
+            var offset = $e.offset(),
+                width = $e.width(),
+                height = $e.height(),
+                vector = $e.data('vector');
+
+            if (offset.left <= leftBound && vector.x < 0) {
+                vector.x = -1 * vector.x;
+            }
+            if ((offset.left + width) >= playWidth) {
+                vector.x = -1 * vector.x;
+            }
+            if (offset.top <= topBound && vector.y < 0) {
+                vector.y = -1 * vector.y;
+            }
+            if ((offset.top + height) >= playHeight) {
+                vector.y = -1 * vector.y;
+            }
+
+            $e.css({
+                'top': offset.top + vector.y + 'px',
+                'left': offset.left + vector.x + 'px'
+            }).data('vector', {
+                'x': vector.x,
+                'y': vector.y
+            });
+            
+            if (play) {
+              setTimeout(function() {
+                  move($e);
+              }, 50);
+            }            
+        };
+        move($this);
+    });
+
+};
+
+$('#ball').bounce({
+    'speed': score + 5
+});
+
+function ballClick() {
+  var ball = document.getElementById('ball');
+
+  score += 1;
+
+  play = false;
+
+  ball.addEventListener('click', ballClick);
+
+  $('#label').text(labels[score - 1]);
+  if (score < 10) {
+    $('#score').text('0' + score);
+  } else {
+    $('#score').text(score);
+  }
+
+  $('#count').css({display: 'block'});
+  setTimeout(function() {
+    $('#count').text('2');
+    setTimeout(function() {
+      $('#count').text('1');
+      setTimeout(function() {
+        $('#count').text('GO!');
+        setTimeout(function() {
+          $('#count').css({display: 'none'});
+          $('#count').text('3');
+          play = true;
+          $('#ball').bounce({
+            'speed': score + 5
+          });
+        }, 500);
+      }, 1000);
+    }, 1000);
+  }, 1000);
+}
+
+var ball = document.getElementById('ball')
+ball.addEventListener('click', ballClick);
+
